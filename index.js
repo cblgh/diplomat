@@ -6,7 +6,6 @@ const messageUtilMixin = {
     getUsableText(messageContainer) {
       const match = /(#\S+\s)?(.+)/g.exec(messageContainer.body)
       if (!match) return ""
-      console.log(!match[1], match)
       let message = match[1] ? match[2] : match[0]
       let result = this.separateImageFromBody(message)
       return result[0] 
@@ -35,10 +34,13 @@ Vue.component("channel-view", {
   mounted() {
   },
   methods: {
+    goBack () {
+      this.$emit("input", "overview")
+    }
   },
   template: `
   <div>
-    <button class="contrast">back</button>
+    <button @click="goBack" class="contrast">back</button>
     <h2>{{ channel }}</h2>
     <div class="category-container" v-for="message in messages">
       <span>{{ message.nick }}</span> <span> {{ getUsableText(message) }} </span>
@@ -127,6 +129,7 @@ Vue.component("base-view", {
     }
   },
   template: `
+  <div>
   <div id="main-wrapper">
     <div id="logo-container">
       <h1 id="logo"> <a href="/">Moderator</a></h1>
@@ -134,21 +137,24 @@ Vue.component("base-view", {
                       <br>It’s a long way to the top if you wanna rock and roll
       </h2>
     </div>
-    <channel-view :channel=focusedChannel :messages="getChannelMessages(focusedChannel)" v-if="currentView == 'channel'"></channel-view>
+    <channel-view v-model="currentView" :channel=focusedChannel :messages="getChannelMessages(focusedChannel)" v-if="currentView == 'channel'"></channel-view>
     <template v-if="currentView == 'overview'">
     <h2>Categories</h2>
     <div class="categories-container">
       <div @click="changeView('channel', channel)" class="category-container" v-for="channel in this.getChannelNames()">
         <h3>{{ channel }}</h3>
-        <p>{{ getChannelMessages(channel).length }} posts, {{getChannelAuthors(channel).length}} authors</p>
-        <div class="category-post-link">
-          <p>Last post {{ since(getChannelMessages(channel)[0])}} ago</p>
-          <a href="">{{ getUsableText(getChannelMessages(channel)[0]) }}</a>
+        <div class="col-2">
+          <div>
+            <p>{{ getChannelMessages(channel).length }} posts, {{getChannelAuthors(channel).length}} authors</p>
+            <p>{{ since(getChannelMessages(channel)[0])}} ago</p>
+          </div>
+          <span class="category-post"> {{ getUsableText(getChannelMessages(channel)[0]) }}</span>
         </div>
       </div>
       </template>
     <div id="closing-paragraph">moderator is a distributed ephemeral, forgetful forum. it hosts no identities and no data besides admin messages that seed it. you can use it as your personal social network, create threads, have them to display publicly or share them privately to your friends via sms/email/what have you.</div>
-    <div id="bg"></div>
+  </div>
+  <div id="bg"></div>
   </div>
   `
 })
