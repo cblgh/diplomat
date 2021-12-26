@@ -132,6 +132,10 @@ h1, h2, .category-container, #closing-paragraph {
     grid-template-columns: repeat(2, 1fr);
 }
 
+img {
+    max-width: 40ch;
+}
+
 small {
     font-size: 0.75rem;
     font-style: italic;

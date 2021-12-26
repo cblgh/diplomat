@@ -27,14 +27,23 @@ const messageUtilMixin = {
       let result = this.separateImageFromBody(message)
       return result[0] 
     },
+    hasImage(message) {
+      return this.separateImageFromBody(message)[1] !== ""
+    },
     separateImageFromBody(message) {
+      if (typeof message == "object") {
+        message = message.body
+      }
+      message = message.trim()
       const separator = "!&Qm"
       let index = message.indexOf(separator)
       let contents = message
       let image = ""
       if (index >= 0) {
+        const IPFS_HASH_LENGTH = 46 
         contents = message.slice(0, index).trim()
-        image = message.slice(index-separator.length)
+        // skip the shibboleth bit: `!&`
+        image = message.slice(index+2, index+2+IPFS_HASH_LENGTH)
       }
       return [contents, image]
     }
@@ -63,6 +72,9 @@ Vue.component("channel-view", {
       <span>{{ message.nick }}</span> 
       <small> {{ since(message) }} old </small>
       <span> {{ getUsableText(message) }} </span>
+      <template v-if="hasImage(message)">
+        <img v-bind:src="'https://ipfs.io/ipfs/' + separateImageFromBody(message)[1]">
+      </template>
     </div>
   </div>
   `
@@ -98,7 +110,10 @@ Vue.component("base-view", {
           channels[channelName] = {}
         }
         // store messages per channel using the message's key, thereby deduplicating messages
-        channels[channelName][m.key.slice(0,10)] = m
+        const postid = m.key.slice(0,8)
+        if (!channels[channelName][postid]) {
+          channels[channelName][postid] = m
+        }
       })
       return channels
     },
